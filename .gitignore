@@ -1,3 +1,3 @@
 ﻿# Ignorar documentos pesados y capas qgis2web/layers generadas
-Nueva carpeta/*.docx
-Nueva carpeta/Memoria Justificativa.docx
+data/*.docx
+data/Memoria Justificativa.docx

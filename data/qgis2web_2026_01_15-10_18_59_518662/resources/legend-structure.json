@@ -1,0 +1,211 @@
+{
+  "groups": [
+    {
+      "name": "Actuaciones Comarcales",
+      "subgroups": [
+        {
+          "name": "Propuestas",
+          "layers": [
+            "Centro Educativo",
+            "Centro Sanitario",
+            "Localizaciones Propuestas"
+          ]
+        },
+        {
+          "name": "Equipamientos a escala comarcal",
+          "layers": [
+            "RED PRIMARIA COMARCAL",
+            "Carreteras principales",
+            "Carreteras_ejes y nombres",
+            "Núcleos urbanos",
+            "CARRETERAS CATEGORIZADAS"
+          ],
+          "subgroups": [
+            {
+              "name": "Recorridos Culturales",
+              "layers": [
+                "SGR Senderos Gran Recorrido ",
+                "Senderos Gran Recorrido"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Infraestructura Verde",
+      "subgroups": [
+        {
+          "name": "Conectores",
+          "subgroups": [
+            {
+              "name": "Conectores Funcionales",
+              "layers": [
+                "01_Conectores Funcionales"
+              ]
+            },
+            {
+              "name": "Conectores ecológicos",
+              "subgroups": [
+                {
+                  "name": "Conectores fluviales",
+                  "layers": [
+                    "Embalse Puebla del Arenoso",
+                    "Rios Principales",
+                    "Rios y Barrancos"
+                  ]
+                },
+                {
+                  "name": "Otros",
+                  "layers": [
+                    "Areas con Riesgo Inundabilidad",
+                    "Corredores Territoriales",
+                    "Zona Policía Cauces 100m"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Elementos de interés ambiental",
+          "layers": [
+            "Microrreservas",
+            "Lugar de Interés Comunitario",
+            "ZEC_Zonas de Especial Conservación ",
+            "ZEPA_Zonas de Especial Protección para las Aves ",
+            "Hábitats de Interés Comunitario",
+            "Terrenos forestales estratégicos",
+            "Parques Naturales Protegidos",
+            "Parajes Naturales Municipales",
+            "UD Paisaje Alto Valor"
+          ]
+        },
+        {
+          "name": "Elementos de interés territorial",
+          "layers": [
+            "Bienes Patrimoniales ",
+            "Cuevas"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Red Primaria Municipal",
+      "layers": [
+        "05_Red Primaria Castillo de Villamalefa",
+        "05_Red Primaria Arañuel",
+        "05_Red Primaria Argelita",
+        "05_Red Primaria Ayódar",
+        "05_Red Primaria Cirat",
+        "05_Red Primaria Cortes del Arenoso",
+        "05_Red Primaria Espadilla",
+        "05_Red Primaria Fanzara",
+        "05_Red Primaria Fuentes de Ayódar",
+        "05_Red Primaria Fuente la Reina",
+        "05_Red Primaria Ludiente",
+        "05_Red Primaria Montán",
+        "05_Red Primaria Montanejos",
+        "05_Red Primaria Puebla del Arenoso",
+        "05_Red Primaria Toga",
+        "05_Red Primaria Torralba del Pinar",
+        "05_Red Primaria Torrechiva",
+        "05_Red Primaria Villahermosa del Río",
+        "05_Red Primaria Vallat",
+        "05_Red Primaria Villanueva de Viver",
+        "05_Red Primaria Villamalur",
+        "05_Red Primaria Zucaina"
+      ]
+    },
+    {
+      "name": "Afecciones",
+      "subgroups": [
+        {
+          "name": "Patrimonio",
+          "layers": [
+            "04_Afección Patrimonio"
+          ]
+        },
+        {
+          "name": "Senderos",
+          "layers": [
+            "04_Senderos"
+          ]
+        },
+        {
+          "name": "Inundabilidad",
+          "layers": [
+            "04_Riesgo de Inundación"
+          ]
+        },
+        {
+          "name": "Cauces",
+          "layers": [
+            "04_Dominio Público Hidráulico (DPH)",
+            "04_Servidumbre cauces 5m",
+            "04_Zona Policía Cauces 100m",
+            "04_Otros cauces"
+          ]
+        },
+        {
+          "name": "Transporte Eléctrico",
+          "layers": [
+            "04_Lineas Electricas",
+            "04_Franja Servidumbre 25m L"
+          ]
+        },
+        {
+          "name": "Proteccion Incendios",
+          "layers": [
+            "04_Areas incendiadas",
+            "04_Líneas cortafuegos",
+            "04_Areas cortafuegos"
+          ]
+        },
+        {
+          "name": "Protección y Reserva Natural",
+          "layers": [
+            "04_Microreservas",
+            "04_ZEC - Zonas de Especial Conservación _ LIC - Lugar de Interés Comunitario"
+          ]
+        },
+        {
+          "name": "Derechos mineros",
+          "layers": [
+            "04_Derechos mineros"
+          ]
+        },
+        {
+          "name": "PECV",
+          "layers": [
+            "PECV_Aptitud_aprovechamiento_eolico"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capas de Fondo",
+      "isBaseLayers": true,
+      "subgroups": [
+        {
+          "name": "OpenStreetMap",
+          "layers": [
+            "OpenStreetMap"
+          ]
+        },
+        {
+          "name": "Google Satellite",
+          "layers": [
+            "Google Satellite"
+          ]
+        },
+        {
+          "name": "Catastro",
+          "layers": [
+            "Catastro"
+          ]
+        }
+      ]
+    }
+  ]
+}

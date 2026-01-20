@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor Núcleos Históricos EPSG:3857</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .panel {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            max-width: 320px;
+        }
+
+        .panel h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .status {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status.loading {
+            background-color: #e7f3ff;
+            color: #004085;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            max-width: 450px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 12px;
+            border: 1px solid #e8e8e8;
+        }
+
+        .legend::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .legend::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .legend::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .legend::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+
+        .legend h4 {
+            margin: 15px 0 10px 0;
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend h4:first-child {
+            margin-top: 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 6px 0;
+            transition: background-color 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background-color: #f0f7ff;
+            padding-left: 4px;
+            padding-right: 4px;
+            border-radius: 4px;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            border-radius: 4px;
+            border: 1.5px solid rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-label {
+            font-size: 12px;
+            color: #444;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .layer-control {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 12px;
+        }
+
+        .layer-control h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .layer-control label {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .layer-control input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div class="panel">
+        <h3><i class="fas fa-landmark"></i> Núcleos Históricos</h3>
+        <div class="status loading" id="status">Inicializando mapa...</div>
+    </div>
+
+    <div class="info">
+        <i class="fas fa-info-circle"></i> Haz clic en los polígonos para ver detalles
+    </div>
+
+    <div class="layer-control">
+        <h4>Capas Base</h4>
+        <label>
+            <input type="checkbox" id="catastro-toggle"> Catastro
+        </label>
+    </div>
+
+    <div class="legend" id="legend">
+        <h4><i class="fas fa-layer-group"></i> Capas</h4>
+        <div id="legend-content"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+    <script>
+        const statusEl = document.getElementById('status');
+
+        // Crear capa base OSM
+        const osmLayer = new ol.layer.Tile({
+            source: new ol.source.OSM(),
+            title: 'OpenStreetMap'
+        });
+
+        // Capa WMS del Catastro
+        const catastroLayer = new ol.layer.Tile({
+            source: new ol.source.TileWMS({
+                url: 'https://ovc.catastro.meh.es/cartografia/wms/servidorwms.aspx',
+                params: {
+                    'LAYERS': 'Catastro',
+                    'TILED': true,
+                    'VERSION': '1.1.1',
+                    'STYLES': ''
+                },
+                projection: 'EPSG:4326',
+                serverType: 'mapserver',
+                crossOrigin: 'anonymous'
+            }),
+            title: 'Catastro',
+            visible: false,
+            opacity: 0.7
+        });
+
+        // Estilos para la capa de núcleos (del archivo QML: Nucleos historicos_GeoJSON.qml)
+        const styleNucleos = function() {
+            return new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'rgba(160, 18, 45, 0.5)' // RGB: 160,18,45 con opacidad 0.5
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#000000', // Negro
+                    width: 2,
+                    lineDash: [5, 5] // dash dot pattern
+                })
+            });
+        };
+
+        // Estilos para la capa de líneas de crecimiento (del archivo QML: Líneas de Crecimiento Morfologico_EP_GeoJSON.qml)
+        const styleLineas = function() {
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(110, 5, 18, 1)', // RGB: 110,5,18 - rojo oscuro
+                    width: 1.5
+                })
+            });
+        };
+
+        // Estilos para la capa de zonas de expansión (del archivo QML: 03_Zonas de Expansión Periurbana_GeoJSON.qml)
+        // Categorías según el campo "zona pat"
+        const colorMap = {
+            'ZRC-EP': { color: 'rgba(165, 148, 78, 0.8)', label: 'ZRC-EP' },
+            'ZRP-EP': { color: 'rgba(132, 170, 126, 0.8)', label: 'ZRP-EP' },
+            'ZRP-NA-EP': { color: 'rgba(157, 187, 152, 1)', label: 'ZRP-NA-EP' },
+            'ZRP-AG': { color: 'rgba(124, 167, 120, 0.8)', label: 'ZRP-AG' },
+            'ZUR-RE-M': { color: 'rgba(210, 82, 83, 0.8)', label: 'ZUR-RE-M' },
+            'ZUR-TR': { color: 'rgba(199, 95, 90, 0.8)', label: 'ZUR-TR' },
+            'ZUR-IN': { color: 'rgba(196, 165, 78, 0.8)', label: 'ZUR-IN' },
+            'ZRP-NA-PE-P': { color: 'rgba(56, 111, 70, 0.8)', label: 'ZRP-NA-PE-P' },
+            'ZRP-PP': { color: 'rgba(53, 152, 102, 0.7)', label: 'ZRP-PP' },
+            'ZRP-FO-P': { color: 'rgba(78, 141, 82, 0.7)', label: 'ZRP-FO-P' },
+            'ZRP-FO': { color: 'rgba(78, 141, 82, 0.7)', label: 'ZRP-FO' },
+            'ZRC-AG2': { color: 'rgba(243, 202, 152, 0.48)', label: 'ZRC-AG2' },
+            'ZRC-AG1': { color: 'rgba(210, 223, 138, 0.48)', label: 'ZRC-AG1' },
+            'ZRC-FO': { color: 'rgba(201, 233, 172, 0.8)', label: 'ZRC-FO' },
+            'ZRC-MAF': { color: 'rgba(181, 218, 169, 0.7)', label: 'ZRC-MAF' },
+            'ZRP-NA-AG 1I': { color: 'rgba(115, 158, 78, 0.8)', label: 'ZRP-NA-AG 1I' },
+            'ZRP-NA-AG 2T': { color: 'rgba(152, 195, 53, 0.7)', label: 'ZRP-NA-AG 2T' },
+            'ZRP-NA-PE1-E': { color: 'rgba(56, 111, 70, 0.8)', label: 'ZRP-NA-PE1-E' },
+            'ZRP-NA-PE2-E': { color: 'rgba(53, 152, 102, 0.7)', label: 'ZRP-NA-PE2-E' },
+            'ZRP-NA-RE': { color: 'rgba(140, 240, 17, 0.977)', label: 'ZRP-NA-RE' },
+            'ZRP-FO-E': { color: 'rgba(78, 141, 82, 0.5)', label: 'ZRP-FO-E' }
+        };
+
+        const styleExpansion = function(feature) {
+            // El campo real en el GeoJSON es "Zona PAT"
+            const zonaKey = feature.get('Zona PAT');
+            const styleData = colorMap[zonaKey] || { color: 'rgba(200, 200, 200, 0.5)', label: 'Otro' };
+            
+            return new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: styleData.color
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#6b5d2c',
+                    width: 1
+                })
+            });
+        };
+
+        // Colores para 03_Zonas_GeoJSON.qml (23 categorías)
+        const colorMapZonas = {
+            'ZRC-EP': 'rgba(255, 255, 255, 0.94)',
+            'ZRP-EP': 'rgba(255, 255, 255, 0.84)',
+            'ZRP-NA-EP': 'rgba(255, 255, 255, 1)',
+            'ZRP-AG': 'rgba(76, 218, 90, 0.6)',
+            'ZUR-RE': 'rgba(157, 69, 69, 0.8)',
+            'ZUR-TR': 'rgba(122, 112, 34, 0.7)',
+            'ZUR-IN': 'rgba(160, 160, 160, 1)',
+            'ZRP-NA-PE-P': 'rgba(56, 111, 68, 0.8)',
+            'ZRP-PP-P': 'rgba(99, 165, 125, 0.7)',
+            'ZRP-FO-P': 'rgba(78, 141, 82, 0.6)',
+            'ZRP-FO': 'rgba(78, 141, 82, 0.5)',
+            'ZRC-AG2': 'rgba(243, 202, 152, 0.48)',
+            'ZRC-AG1': 'rgba(210, 223, 138, 0.48)',
+            'ZRC-FO': 'rgba(201, 233, 172, 0.8)',
+            'ZRC-MAF': 'rgba(181, 218, 169, 0.7)',
+            'ZRP-NA-AG1I-E': 'rgba(115, 158, 78, 0.8)',
+            'ZRP-NA-AG2T-E': 'rgba(152, 195, 53, 0.7)',
+            'ZRP-NA-PE2-E': 'rgba(53, 152, 102, 0.7)',
+            'ZRP-NA-RE-E': 'rgba(140, 240, 17, 0.977)',
+            'ZRP-FO-E': 'rgba(78, 141, 82, 0.5)',
+            'ZRP-NA-PE1-E': 'rgba(56, 111, 70, 0.8)',
+            'ZUR-NHT': 'rgba(160, 18, 45, 1)',
+            'NULL': 'rgba(183, 72, 75, 1)'
+        };
+
+        const styleZonas = function(feature) {
+            const zonaKey = feature.get('Zona PAT') || 'NULL';
+            const color = colorMapZonas[zonaKey] || 'rgba(200, 200, 200, 0.5)';
+            
+            return new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: color
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#232323',
+                    width: 0.5
+                })
+            });
+        };
+
+        // Colores para 03_Zonas Lineales_GeoJSON.qml (3 categorías)
+        const colorMapZonasLineales = {
+            'ZRP-AF1': 'rgba(159, 163, 153, 0.8)',
+            'ZRP-AF2': 'rgba(197, 170, 121, 0.8)',
+            'ZRP-CA': 'rgba(135, 196, 209, 0.5)'
+        };
+
+        const styleZonasLineales = function(feature) {
+            const zonaKey = feature.get('Zona PAT');
+            const color = colorMapZonasLineales[zonaKey] || 'rgba(200, 200, 200, 0.5)';
+            
+            return new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: color
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#232323',
+                    width: 0.5
+                })
+            });
+        };
+
+        // Estilo para AM Municipios Relacionados (del QML: AM_MunicipiosRelacionadoscp copiar.qml)
+        const styleAMmunicipios = function(feature) {
+            return new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(0, 0, 0, 1)', // Negro (RGB: 0,0,0)
+                    width: 2.5
+                }),
+                fill: new ol.style.Fill({
+                    color: 'rgba(243, 166, 178, 0)' // Rosa claro (RGB: 243,166,178) completamente transparente
+                }),
+                text: new ol.style.Text({
+                    text: feature.get('nom_mun') || '', // Mostrar nombre del municipio
+                    font: 'bold 14px "MS Shell Dlg 2"',
+                    fill: new ol.style.Fill({
+                        color: 'rgba(0, 0, 0, 1)' // Texto negro
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: 'rgba(255, 255, 255, 1)', // Halo blanco
+                        width: 2
+                    }),
+                    overflow: true
+                })
+            });
+        };
+
+        // Crear vista en EPSG:3857
+        const view = new ol.View({
+            projection: 'EPSG:3857',
+            center: [-50000, 4850000],
+            zoom: 8
+        });
+
+        // Crear mapa
+        const map = new ol.Map({
+            target: 'map',
+            layers: [osmLayer, catastroLayer],
+            view: view
+        });
+
+        // Variables para el sistema de hover y popup
+        let currentHoverFeature = null;
+        let highlightStyle = null;
+        let amMunicipiosLayer = null; // Referencia a la capa de municipios para excluirla
+
+        // Crear popup
+        const popupElement = document.createElement('div');
+        popupElement.style.cssText = `
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            padding: 10px;
+            max-width: 280px;
+            font-size: 12px;
+        `;
+
+        const popup = new ol.Overlay({
+            element: popupElement,
+            autoPan: true,
+            autoPanAnimation: { duration: 250 }
+        });
+        map.addOverlay(popup);
+
+        // Función para obtener información de la capa a partir del feature
+        function getLayerNameAndTitle(feature) {
+            // Buscar a qué capa pertenece el feature
+            let layerName = 'Información';
+            map.getLayers().forEach(layer => {
+                if (layer instanceof ol.layer.Vector && layer.getSource()) {
+                    if (layer.getSource().getFeatures().includes(feature)) {
+                        layerName = layer.get('title') || 'Información';
+                    }
+                }
+            });
+            return layerName;
+        }
+
+        // Manejador de click mejorado que muestra info de cualquier capa
+        map.on('click', function(evt) {
+            const feature = map.forEachFeatureAtPixel(evt.pixel, function(f) {
+                return f;
+            }, {
+                layerFilter: function(layer) {
+                    // Excluir la capa de municipios
+                    return layer !== amMunicipiosLayer;
+                }
+            });
+
+            if (feature) {
+                const props = feature.getProperties();
+                const layerName = getLayerNameAndTitle(feature);
+                let html = `<h4 style="margin: 0 0 8px 0; color: #333;">${layerName}</h4>`;
+                html += '<table style="width:100%; border-collapse:collapse;">';
+
+                // Mostrar 'Desc_Z PAT' solo para la capa 03_Zonas
+                const showDescZPAT = layerName === '03_Zonas';
+                for (const [key, value] of Object.entries(props)) {
+                    if (key === 'geometry') continue;
+                    if (key === 'Desc_Z PAT' && !showDescZPAT) continue;
+                    html += `<tr style="border-bottom:1px solid #eee;">
+                        <td style="font-weight:bold; padding:4px; width:40%;">${key}:</td>
+                        <td style="padding:4px;">${value || '—'}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+
+                popupElement.innerHTML = html;
+                popup.setPosition(evt.coordinate);
+            } else {
+                popup.setPosition(undefined);
+            }
+        });
+
+        // Manejador de hover para resaltar el límite del polígono
+        map.on('pointermove', function(evt) {
+            // Remover resaltado anterior
+            if (currentHoverFeature) {
+                currentHoverFeature.setStyle(null);
+                currentHoverFeature = null;
+            }
+
+            const feature = map.forEachFeatureAtPixel(evt.pixel, function(f) {
+                return f;
+            }, {
+                layerFilter: function(layer) {
+                    // Excluir la capa de municipios
+                    return layer !== amMunicipiosLayer;
+                }
+            });
+
+            if (feature) {
+                currentHoverFeature = feature;
+                // Crear estilo de hover: granate con stroke resaltado
+                const hoverStyle = new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'rgba(128, 0, 0, 0.2)' // Granate muy transparente
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: 'rgba(139, 35, 69, 0.9)', // Granate fuerte (casi opaco)
+                        width: 3
+                    })
+                });
+                feature.setStyle(hoverStyle);
+            }
+        });
+
+        // Cargar GeoJSON de AM Municipios Relacionados (sin agregar a leyenda)
+        fetch('capas/AM_MunicipiosRelacionadoscp copiar.geojson')
+            .then(response => {
+                if (!response.ok) throw new Error('Error al cargar AM municipios');
+                return response.json();
+            })
+            .then(geojson => {
+                const sourceAM = new ol.source.Vector({
+                    features: new ol.format.GeoJSON({
+                        dataProjection: 'EPSG:3857',
+                        featureProjection: 'EPSG:3857'
+                    }).readFeatures(geojson)
+                });
+
+                const amLayer = new ol.layer.Vector({
+                    source: sourceAM,
+                    style: styleAMmunicipios,
+                    title: 'AM Municipios Relacionados'
+                });
+
+                // Guardar referencia a esta capa para excluirla del hover/click
+                amMunicipiosLayer = amLayer;
+
+                // Agregar al fondo (z-order bajo)
+                map.getLayers().insertAt(1, amLayer);
+            })
+            .catch(error => {
+                console.error('Error cargando AM municipios:', error);
+            });
+
+        // Cargar GeoJSON de Núcleos Históricos
+        fetch('capas/Nucleos historicos_GeoJSON.geojson')
+            .then(response => {
+                if (!response.ok) throw new Error('Error al cargar el archivo');
+                return response.json();
+            })
+            .then(geojson => {
+                statusEl.textContent = 'Renderizando capa...';
+                statusEl.className = 'status loading';
+
+                // Crear source con GeoJSON (ya está en EPSG:3857)
+                const source = new ol.source.Vector({
+                    features: new ol.format.GeoJSON({
+                        dataProjection: 'EPSG:3857',
+                        featureProjection: 'EPSG:3857'
+                    }).readFeatures(geojson)
+                });
+
+                // Crear capa vectorial
+                const nucleosLayer = new ol.layer.Vector({
+                    source: source,
+                    style: styleNucleos,
+                    title: 'Núcleos Históricos'
+                });
+
+                // Agregar capa al mapa
+                map.addLayer(nucleosLayer);
+
+                statusEl.textContent = '✓ Cargado (' + source.getFeatures().length + ' elementos)';
+                statusEl.className = 'status success';
+
+                // Cargar tercera capa: Zonas de Expansión Periurbana (debe estar debajo de líneas)
+                fetch('capas/03_Zonas de Expansión Periurbana_GeoJSON.geojson')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error al cargar zonas');
+                        return response.json();
+                    })
+                    .then(geojson => {
+                        const sourceExpansion = new ol.source.Vector({
+                            features: new ol.format.GeoJSON({
+                                dataProjection: 'EPSG:3857',
+                                featureProjection: 'EPSG:3857'
+                            }).readFeatures(geojson)
+                        });
+
+                        const expansionLayer = new ol.layer.Vector({
+                            source: sourceExpansion,
+                            style: styleExpansion,
+                            title: 'Zonas'
+                        });
+
+                        // Agregar debajo (atrás)
+                        map.addLayer(expansionLayer);
+                    })
+                    .catch(error => {
+                        console.error('Error cargando zonas:', error);
+                    });
+
+                // Cargar segunda capa: Líneas de Crecimiento Morfologico (encima de zonas)
+                fetch('capas/Líneas de Crecimiento Morfologico_EP_GeoJSON.geojson')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error al cargar líneas');
+                        return response.json();
+                    })
+                    .then(geojson => {
+                        // Filtrar features: solo mostrar EP_9 = 20 o 40
+                        const filteredFeatures = new ol.format.GeoJSON({
+                            dataProjection: 'EPSG:3857',
+                            featureProjection: 'EPSG:3857'
+                        }).readFeatures(geojson).filter(feature => {
+                            const ep9 = feature.get('EP_9');
+                            return ep9 === 20 || ep9 === 40;
+                        });
+
+                        const sourceLineas = new ol.source.Vector({
+                            features: filteredFeatures
+                        });
+
+                        const lineasLayer = new ol.layer.Vector({
+                            source: sourceLineas,
+                            style: styleLineas,
+                            title: 'Líneas de Crecimiento Morfológico'
+                        });
+
+                        map.addLayer(lineasLayer);
+                    })
+                    .catch(error => {
+                        console.error('Error cargando líneas:', error);
+                    });
+
+                // Cargar cuarta capa: 03_Zonas_GeoJSON (debajo de todas)
+                fetch('capas/03_Zonas_GeoJSON.geojson')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error al cargar zonas generales');
+                        return response.json();
+                    })
+                    .then(geojson => {
+                        // Filtrar features: excluir ZRC-EP, ZRP-NA-EP y ZRP-EP
+                        const filteredFeatures = new ol.format.GeoJSON({
+                            dataProjection: 'EPSG:3857',
+                            featureProjection: 'EPSG:3857'
+                        }).readFeatures(geojson).filter(feature => {
+                            const zonaPAT = feature.get('Zona PAT');
+                            return !['ZRC-EP', 'ZRP-NA-EP', 'ZRP-EP'].includes(zonaPAT);
+                        });
+
+                        const sourceZonas = new ol.source.Vector({
+                            features: filteredFeatures
+                        });
+
+                        const zonasLayer = new ol.layer.Vector({
+                            source: sourceZonas,
+                            style: styleZonas,
+                            title: '03_Zonas',
+                            zIndex: 60
+                        });
+
+                        // Agregar al inicio (abajo en z-order)
+                        map.getLayers().insertAt(1, zonasLayer);
+
+                        // Ajustar vista a la extensión de esta capa
+                        const extentZonas = sourceZonas.getExtent();
+                        view.fit(extentZonas, { padding: [50, 50, 50, 50] });
+                    })
+                    .catch(error => {
+                        console.error('Error cargando zonas generales:', error);
+                    });
+
+                // Cargar quinta capa: 03_Zonas Lineales_GeoJSON (debajo de todas)
+                fetch('capas/03_Zonas Lineales_GeoJSON.geojson')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Error al cargar zonas lineales');
+                        return response.json();
+                    })
+                    .then(geojson => {
+                        const sourceZonasLineales = new ol.source.Vector({
+                            features: new ol.format.GeoJSON({
+                                dataProjection: 'EPSG:3857',
+                                featureProjection: 'EPSG:3857'
+                            }).readFeatures(geojson)
+                        });
+
+                        const zonasLinealesLayer = new ol.layer.Vector({
+                            source: sourceZonasLineales,
+                            style: styleZonasLineales,
+                            title: '03_Zonas Lineales'
+                        });
+
+                        // Agregar al inicio (abajo en z-order)
+                        map.getLayers().insertAt(1, zonasLinealesLayer);
+                    })
+                    .catch(error => {
+                        console.error('Error cargando zonas lineales:', error);
+                    });
+
+                // Manejador para toggle del Catastro
+                const catastroToggle = document.getElementById('catastro-toggle');
+                catastroToggle.addEventListener('change', function() {
+                    catastroLayer.setVisible(this.checked);
+                });
+
+                // Construir leyenda
+                const legendContent = document.getElementById('legend-content');
+                legendContent.innerHTML = '';
+
+                // Leyenda para Núcleos Históricos
+                let legendHTML = '';
+                legendHTML += `<div class="legend-item">
+                    <div class="legend-color" style="background: rgba(160, 18, 45, 0.5);"></div>
+                    <span class="legend-label">Núcleos históricos</span>
+                </div>`;
+                // Añadir BEPP Bordes de Expansión Periurbana Preferente
+                legendHTML += `<div class="legend-item">
+                    <svg width="24" height="24" style="margin-right:12px;display:inline-block;vertical-align:middle;">
+                        <line x1="4" y1="12" x2="20" y2="12" stroke="#800040" stroke-width="4" stroke-linecap="round" />
+                    </svg>
+                    <span class="legend-label">BEPP Bordes de Expansión Periurbana Preferente</span>
+                </div>`;
+                legendContent.innerHTML += legendHTML;
+
+                // Leyenda para 03_Zonas (23 categorías, excluidas ZRC-EP, ZRP-EP, ZRP-NA-EP)
+                legendHTML = '<h4>03_Zonas</h4>';
+                const zonasCategories = Object.keys(colorMapZonas).filter(key => 
+                    !['ZRC-EP', 'ZRP-EP', 'ZRP-NA-EP'].includes(key)
+                );
+                zonasCategories.forEach(key => {
+                    const color = colorMapZonas[key];
+                    legendHTML += `<div class="legend-item">
+                        <div class="legend-color" style="background: ${color};"></div>
+                        <span class="legend-label">${key}</span>
+                    </div>`;
+                });
+                legendContent.innerHTML += legendHTML;
+
+                // Leyenda para 03_Zonas Lineales (3 categorías)
+                legendHTML = '<h4>03_Zonas Lineales</h4>';
+                Object.entries(colorMapZonasLineales).forEach(([key, color]) => {
+                    legendHTML += `<div class="legend-item">
+                        <div class="legend-color" style="background: ${color};"></div>
+                        <span class="legend-label">${key}</span>
+                    </div>`;
+                });
+                legendContent.innerHTML += legendHTML;
+            })
+            .catch(error => {
+                console.error(error);
+                statusEl.textContent = '✗ Error: ' + error.message;
+                statusEl.className = 'status error';
+            });
+    </script>
+</body>
+</html>
