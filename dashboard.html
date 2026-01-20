@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Respuestas de Encuestas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: #833f53;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #833f53;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3bbfa3;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .filters label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: 500;
+        }
+        
+        .filters input,
+        .filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #833f53;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .municipio-badge {
+            background: #3bbfa3;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+        
+        .tipo-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .tipo-comentario {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .tipo-propuesta {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .tipo-observacion {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .tipo-alegacion {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .comentario-preview {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .btn {
+            background: #833f53;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #3bbfa3;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .info-box {
+            background: #cce5ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dashboard de Respuestas</h1>
+            <p>Panel de administración - Encuestas de Participación PAT Alto Mijares</p>
+        </header>
+        
+        <div class="info-box">
+            <p><strong>ℹ️ Nota:</strong> Este dashboard requiere que las respuestas se guarden en una base de datos.</p>
+            <p>Para habilitar el almacenamiento en BD, edita el archivo <code>config_encuestas.php</code> y sigue las instrucciones.</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total de Respuestas</h3>
+                <div class="number" id="total-respuestas">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Municipios Participantes</h3>
+                <div class="number" id="municipios-unicos">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Respuestas Hoy</h3>
+                <div class="number" id="respuestas-hoy">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Última Respuesta</h3>
+                <div class="number" id="ultima-respuesta">N/A</div>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <label>Filtrar por:</label>
+            <input type="text" id="filtro-municipio" placeholder="Municipio...">
+            <select id="filtro-tipo">
+                <option value="">Todos los tipos</option>
+                <option value="Comentario">Comentario</option>
+                <option value="Propuesta">Propuesta</option>
+                <option value="Observación">Observación</option>
+                <option value="Alegación">Alegación</option>
+            </select>
+            <button class="btn btn-small" onclick="aplicarFiltros()">Filtrar</button>
+            <button class="btn btn-small" onclick="location.reload()">Recargar</button>
+        </div>
+        
+        <table id="tabla-respuestas">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Municipio</th>
+                    <th>Tipo</th>
+                    <th>Comentario</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla">
+                <tr>
+                    <td colspan="6" class="no-data">
+                        <p>El almacenamiento en base de datos no está configurado.</p>
+                        <p>Las respuestas se envían por email a: <strong>pataltomijares@gmail.com</strong></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            <p>Panel de administración - PAT Alto Mijares © 2026</p>
+            <p>Para más información, contacta al administrador del sitio web.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Información de demostración
+        const datosDemo = [
+            {
+                fecha: '2026-01-19 14:30:45',
+                nombre: 'Juan García López',
+                email: 'juan@example.com',
+                municipio: 'Arañuel',
+                tipo: 'Propuesta',
+                comentario: 'Propongo mejorar las conexiones entre municipios...'
+            },
+            {
+                fecha: '2026-01-19 13:15:22',
+                nombre: 'María Rodríguez',
+                email: 'maria@example.com',
+                municipio: 'Montanejos',
+                tipo: 'Comentario',
+                comentario: 'Excelente iniciativa para la comarca'
+            }
+        ];
+        
+        function cargarDatos() {
+            // Mostrar mensaje informativo
+            const tbody = document.getElementById('cuerpo-tabla');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="no-data">
+                        <p><strong>Datos de demostración (no reales)</strong></p>
+                        <p>Para ver respuestas reales, configura la base de datos en config_encuestas.php</p>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        function aplicarFiltros() {
+            alert('Los filtros estarán disponibles cuando configures la base de datos.');
+        }
+        
+        // Cargar datos al iniciar
+        window.addEventListener('load', cargarDatos);
+    </script>
+</body>
+</html>

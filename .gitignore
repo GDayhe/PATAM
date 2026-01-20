@@ -1,0 +1,6 @@
+﻿# Ignorar documentos pesados y capas qgis2web/layers generadas
+Nueva carpeta/*.docx
+Nueva carpeta/qgis2web_2026_01_15-10_18_59_518662/layers/*
+Nueva carpeta/qgis2web_2026_01_15-10_18_59_518662/resources/*
+Nueva carpeta/Memoria Justificativa.docx
+Nueva carpeta/qgis2web_2026_01_15-10_18_59_518662/layers/04_DominioPblicoHidrulicoDPH_15.js

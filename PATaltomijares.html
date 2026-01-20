@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAT Alto Mijares - Participación Pública</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    /* Efecto hover dinámico en galería de imágenes */
+    #galeria-mosaico .mosaico-participacion-img {
+      transition: transform 0.32s cubic-bezier(.39,.575,.565,1.000), box-shadow 0.32s;
+      cursor: zoom-in;
+    }
+    #galeria-mosaico .mosaico-participacion-img:hover {
+  transform: scale(1.08);
+      box-shadow: 0 8px 32px rgba(131,63,83,0.18), 0 2px 12px rgba(0,0,0,0.13);
+      z-index: 2;
+    }
+    /* Flecha granate Back to Top */
+    html {
+      scroll-behavior: smooth;
+    }
+    /* Botón 'Participa ahora' verde al hover */
+    a.btn[href="#participacion"]:hover {
+      background: #3bbfa3 !important;
+      color: #fff !important;
+      border-color: #3bbfa3 !important;
+    }
+    /* Mostrar título al hacer hover en la imagen del mosaico */
+    .mosaico-participacion-img {
+      position: relative;
+    }
+    .mosaico-participacion-img[data-title]:hover::after {
+      content: attr(data-title);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(131,63,83,0.92);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 1.08rem;
+      font-weight: 500;
+      box-shadow: 0 2px 12px #0004;
+      pointer-events: none;
+      z-index: 20;
+      white-space: pre-line;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 0.18s;
+    }
+    .mosaico-participacion-img[data-title]::after {
+      opacity: 0;
+    }
+    .tabs-municipios .tab-municipio:hover, .tabs-municipios .tab-municipio:focus {
+      cursor: url('Nueva carpeta/icone-de-feuille-verte2.png') 16 16, pointer !important;
+    }
+    /* Pestañas de municipios en Participación */
+    .tabs-municipios .tab-municipio {
+      font-size: 1.18rem;
+      background: #fff;
+      color: #833f53;
+      border: 1.5px solid #e0c7d1;
+      border-radius: 8px;
+      padding: 7px 18px;
+      margin: 2px 0;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, border 0.18s;
+      box-shadow: 0 1px 4px #0001;
+      outline: none;
+    }
+    .tabs-municipios .tab-municipio:hover, .tabs-municipios .tab-municipio:focus {
+      background: #3bbfa3;
+      color: #fff;
+      border-color: #3bbfa3;
+    }
+    .municipio-label {
+      font-size: 1.05rem;
+      color: #222;
+      text-shadow: 0 1px 4px #fff, 0 0px 2px #fff;
+      font-weight: bold;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0.92;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateX(-50%);
+    }
+    /* Forzar cursor hoja en todas las capas del mapa, incluso sobre paths y overlays */
+    #map, .leaflet-container, .leaflet-interactive, .leaflet-overlay-pane * {
+      cursor: url('Nueva carpeta/icone-de-feuille-verte.png') 16 16, auto !important;
+    }
+    /* Forzar cursor hoja en el mapa Leaflet */
+    #map, .leaflet-container {
+      cursor: url('Nueva carpeta/icone-de-feuille-verte.png') 16 16, auto !important;
+    }
+    /* Tamaño de fuente más grande para descripciones */
+    section p {
+      font-size: 1.18rem;
+      line-height: 1.7;
+    }
+
+    /* Efecto hover en imágenes */
+    /* Animación solo para imágenes que no sean de la sección '¿Qué es el Plan?' */
+    .contenido-flex:not(:first-child) .imagen img {
+      transition: transform 0.4s cubic-bezier(.39,.575,.565,1.000), box-shadow 0.4s;
+    }
+    .contenido-flex:not(:first-child) .imagen img:hover {
+      transform: scale(1.07) rotate(-2deg);
+      box-shadow: 0 8px 32px rgba(131,63,83,0.18), 0 2px 12px rgba(0,0,0,0.13);
+      z-index: 2;
+    }
+
+    /* Botón animado */
+    .btn {
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      left: -50%;
+      top: 0;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18) 60%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .btn:hover {
+      box-shadow: 0 4px 18px #b0788c33;
+      transform: translateY(-2px) scale(1.04);
+    }
+    .btn:hover::after {
+      opacity: 1;
+      animation: shine 0.7s linear;
+    }
+    @keyframes shine {
+      from { left: -50%; }
+      to { left: 100%; }
+    }
+
+    /* Sombra y animación en el recuadro hero */
+    .hero-content {
+      box-shadow: 0 8px 32px #b0788c22, 0 2px 12px #0002;
+      transition: box-shadow 0.3s, background 0.3s;
+    }
+    .hero-content:hover {
+      background: linear-gradient(120deg, rgba(255,255,255,0.80) 80%, rgba(180,120,140,0.10) 100%);
+      box-shadow: 0 12px 40px #b0788c33, 0 4px 18px #0003;
+    }
+
+    /* Animación de subrayado en enlaces del menú */
+    nav ul li a {
+      position: relative;
+      overflow: hidden;
+    }
+    nav ul li a::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -2px;
+      height: 2px;
+      background: var(--color-secundario);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    nav ul li a:hover::after {
+      transform: scaleX(1);
+    }
+    nav ul.menu li a:hover, nav ul.menu li a:focus {
+      color: #fff !important;
+      background: none !important;
+      text-shadow: 0 0 2px #833f53, 0 0 6px #833f5344;
+    }
+
+    /* Forzar color blanco en hover de menú principal incluso si hay reglas heredadas */
+    header nav ul.menu > li > a:hover, header nav ul.menu > li > a:focus {
+      color: #fff !important;
+    }
+
+    /* Animación sutil en el mapa al hacer hover */
+    #map {
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    a, button, input[type="submit"], input[type="button"], label, .btn, textarea, select, [role="button"] {
+      cursor: url('Nueva carpeta/icone-de-feuille-verte2.png') 16 16, pointer;
+    }
+    body {
+      font-family: Arial, "Arial Narrow", sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fdfdfd;
+      color: #333;
+      cursor: url('Nueva carpeta/icone-de-feuille-verte.png') 16 16, auto;
+    }
+    :root {
+      --color-principal: rgb(131,63,83);
+      --color-secundario: rgb(180,120,140);
+      --color-fondo: #fafafa;
+      --color-acento: #f7e6ef;
+    }
+    /* ---------- HERO ---------- */
+    .hero {
+      position: relative;
+      min-height: 55vh;
+      width: 100vw;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow: hidden;
+      padding: 0;
+    }
+    .hero-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  object-fit: cover;
+  object-position: center top;
+    }
+    .hero-gradient {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1;
+      background: linear-gradient(120deg, var(--color-principal) 60%, var(--color-acento) 100%);
+  opacity: 0.22;
+      pointer-events: none;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 700px;
+      text-align: left;
+      padding: 2rem 2rem 2rem 1rem;
+      background: linear-gradient(120deg, rgba(255,255,255,0.65) 80%, rgba(180,120,140,0.04) 100%);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0002;
+      color: var(--color-principal);
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-img {
+      display: none;
+    }
+    /* ---------- HEADER ---------- */
+    header {
+      background-color: var(--color-principal);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.2s, background 0.2s;
+    }
+    nav ul li a:hover, nav ul li a:focus {
+      color: #fff !important;
+      background: rgba(131,63,83,0.18);
+    }
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .menu-toggle span {
+      background: white;
+      height: 3px;
+      width: 25px;
+      margin: 4px 0;
+      border-radius: 5px;
+    }
+    .menu {
+      display: flex;
+    }
+    @media (max-width: 768px) {
+      .menu {
+        display: none;
+        flex-direction: column;
+        background: var(--color-principal);
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 200px;
+        padding: 10px;
+      }
+      .menu.show {
+        display: flex;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+      .hero-content {
+        padding: 1rem;
+      }
+      .hero h1 {
+        font-size: 1.5rem;
+      }
+      .hero-img {
+        width: 80vw;
+      }
+    }
+    /* ---------- SECCIONES ---------- */
+    section {
+  padding: 50px 4vw;
+      section {
+        padding-left: 2vw;
+        padding-right: 2vw;
+      }
+      background-color: var(--color-fondo);
+      border-bottom: 1px solid #eee;
+    }
+    section h2 {
+      color: var(--color-principal);
+      margin-bottom: 1.5rem;
+    }
+    .contenido-flex {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .contenido-flex.reverse {
+      flex-direction: row-reverse;
+    }
+    .contenido-flex .texto {
+      flex: 1 1 320px;
+      min-width: 250px;
+    }
+    .contenido-flex .imagen {
+      flex: 1 1 320px;
+      min-width: 220px;
+      text-align: center;
+    }
+    .imagen img {
+      max-width: 100%;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+      margin-bottom: 0.5rem;
+    }
+    /* ---------- MAPA ---------- */
+    #map {
+  height: 750px;
+      border-radius: 10px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    /* ---------- FORMULARIO ---------- */
+    form {
+      max-width: 600px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin: 0 auto;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    form button {
+      background-color: var(--color-principal);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    form button:hover {
+      background-color: var(--color-secundario);
+    }
+    /* ---------- BOTÓN ---------- */
+    .btn {
+      display: inline-block;
+      background: var(--color-principal);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 1rem 0;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .btn:hover {
+      background: var(--color-secundario);
+    }
+    /* ---------- FOOTER ---------- */
+    footer {
+      background: #fff;
+      color: var(--color-principal);
+      text-align: center;
+      padding: 20px;
+      border-top: 3px solid var(--color-principal);
+    }
+
+  /* --- Forzar color blanco en hover de menú principal --- */
+  header nav ul.menu > li > a:hover,
+  header nav ul.menu > li > a:focus {
+    color: #833f53 !important;
+    background-color: #fff !important;
+    text-shadow: none !important;
+    border-radius: 8px;
+    padding: 10px 26px !important;
+    margin: -2px -6px !important;
+    transition: color 0.2s, background 0.2s, padding 0.2s, margin 0.2s;
+    outline: none;
+  }
+  </style>
+
+  
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+  <img class="hero-bg" src="Nueva carpeta/Figura 38_Río Mijares aguas abajo de Vallat tras su unión con el Villahermosa.jpg" alt="Portada: Río Mijares aguas abajo de Vallat tras su unión con el Villahermosa">
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <h1>Plan de Acción Territorial del Alto Mijares</h1>
+      <p>Participa en la construcción de un futuro sostenible para nuestra comarca.<br>Descubre el territorio, conoce el plan y aporta tus ideas.</p>
+      <a class="btn" href="#participacion">Participa ahora</a>
+    </div>
+
+
+
+  </section>
+
+  <!-- HEADER -->
+  <header>
+    <h1>PAT Alto Mijares</h1>
+    <div class="menu-toggle" id="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <nav>
+      <ul class="menu" id="menu">
+  <li><a href="#inicio">Inicio</a></li>
+  <li><a href="#que-es">¿Qué es?</a></li>
+  <li><a href="#territorio">Propuestas</a></li>
+  <li><a href="#calendario">Calendario</a></li>
+  <li><a href="#participacion">Participación</a></li>
+  <li><a href="#documentacion">Documentación</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- SECCIONES -->
+  <section id="que-es">
+  <!-- Sección Qué es el Plan -->
+    <div class="contenido-flex">
+      <div class="texto">
+  <h2>¿Qué es el Plan de Acción Territorial del Alto Mijares?</h2>
+        <p>El Plan de Acción Territorial (PAT) del Alto Mijares es un documento estratégico que tiene como objetivo organizar y orientar el desarrollo de la comarca de manera sostenible. Busca proteger y poner en valor el paisaje, los recursos naturales y el patrimonio cultural, al mismo tiempo que fortalecer el mundo rural y mejora la calidad de vida de sus habitantes. A través del PAT se identifican las necesidades del territorio y se proponen actuaciones concretas para fomentar la actividad económica, social y cultural, promoviendo la participación de la ciudadanía para construir un futuro equilibrado y respetuoso con el entorno.</p>
+        <p>El PAT analiza las características de cada municipio y zona del Alto Mijares, evaluando sus fortalezas, oportunidades y desafíos. Con esta información se definen líneas de actuación específicas que buscan preservar los recursos naturales y culturales, impulsar el turismo sostenible, mejorar las infraestructuras y servicios, y apoyar iniciativas económicas que respeten la identidad local.</p>
+        <p style="margin-top: 1.5em;"><a href="Nueva carpeta/Documento de Síntesis.pdf" target="_blank" style="color: #833f53; font-weight: 600; text-decoration: none; border-bottom: 2px solid #833f53; padding-bottom: 2px;">📄 Documento de Síntesis</a></p>
+
+      </div>
+      <div class="imagen">
+        <img src="Nueva carpeta/Figura 16_Casco urbano de Villamalur.jpg" alt="Casco urbano de Villamalur">
+      </div>
+    </div>
+  </section>
+
+  <section id="territorio">
+    <div class="contenido-flex reverse" style="flex-wrap:nowrap;">
+      <div class="texto" style="flex:1 1 100%; min-width:0;">
+        <h2>Propuestas</h2>
+        <h3 style="color:#833f53; font-size:1.3rem; margin-top:0.5em; margin-bottom:1em; font-weight:500;">Propuesta de Ordenación</h3>
+  <p>El Alto Mijares es una comarca de gran riqueza natural y cultural, formada por montañas, bosques y ríos que configuran un paisaje único. Sus pueblos mantienen tradiciones vivas, patrimonio arquitectónico y una estrecha relación con el medio rural, que constituye la base de su identidad. En este primer visor se pueden observar la Infraestructura Verde, Afecciones, Red Primaria y Actuaciones Comarcales que resultan del estudio del territorio. </p>
+        <iframe src="Nueva carpeta/qgis2web_2026_01_15-10_18_59_518662/index.html" style="width:100%; height:900px; border:none; border-radius:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom:1.5em;"></iframe>
+  <p>El PAT pone el foco en la preservación de estos valores, promoviendo la conservación del medio ambiente y la dinamización de actividades compatibles con el entorno, como el turismo sostenible, la agricultura de calidad o la gestión forestal responsable. El paisaje se entiende no solo como un recurso natural, sino también como un elemento que refuerza la cohesión social y el sentido de pertenencia de quienes viven en la comarca.</p>
+  <p>Como resultado del estudio exhaustivo que se ha hecho en el territorio, se ha llegado a la siguiente propuesta de Zonificación, mostrada en el mapa interactivo.</p>
+        <iframe src="Nueva carpeta/visor2zonificacion/index.html" style="width:100%; height:900px; border:none; border-radius:8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></iframe>
+
+  <!-- SECCIÓN CALENDARIO DE EVENTOS (ahora después de fortalezas) -->
+    <section id="calendario">
+    <div class="contenido-flex" style="align-items: flex-start; gap: 2.5rem;">
+      <div style="display: flex; flex-direction: row; align-items: flex-start; width: 100%; gap: 2.5rem;">
+        <div class="texto" style="flex: 1 1 420px; min-width: 320px; max-width: 600px; margin: 0;">
+          <h2>Calendario de Eventos</h2>
+          <div id="event-calendar" style="background: #fff; border-radius: 14px; box-shadow: 0 4px 18px #0001; padding: 32px; width: 100%; max-width: 600px; min-width: 340px; font-size: 1.22rem;">
+            <div id="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <button id="prev-month" style="background: none; border: none; font-size: 1.5rem; color: #833f53; cursor: pointer;">&#8592;</button>
+              <span id="calendar-month" style="font-weight: bold; color: #3bbfa3; font-size: 1.15rem;"></span>
+              <button id="next-month" style="background: none; border: none; font-size: 1.5rem; color: #833f53; cursor: pointer;">&#8594;</button>
+            </div>
+            <table id="calendar-table" style="width: 100%; border-collapse: collapse; text-align: center; font-size: 1.18em; min-width: 320px;">
+              <thead>
+                <tr style="color: #833f53; font-size: 1rem;">
+                  <th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th>
+                </tr>
+              </thead>
+              <tbody id="calendar-body"></tbody>
+            </table>
+            <div id="event-list" style="display:none;"></div>
+          </div>
+        </div>
+  <div class="imagen" style="flex: 1 1 320px; min-width: 260px; max-width: 420px; margin: 72px 0 0 32px;">
+          <div id="event-listado" style="background: #fff; border-radius: 14px; box-shadow: 0 4px 18px #0001; padding: 28px 24px; font-size: 1.13rem; color: #833f53; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start;">
+            <h3 style="margin-top:0; color:#3bbfa3; font-size:1.18rem;">Eventos planificados</h3>
+            <ul id="eventos-todos" style="list-style:none; padding:0; margin:0;"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ...existing code... -->
+      </div>
+    </div>
+  </section>
+
+  <section id="fortalezas">
+    <div class="contenido-flex">
+      <div class="texto">
+        <h2>Fortalezas y Debilidades</h2>
+        <p>El análisis territorial realizado para el PAT permite identificar los principales puntos fuertes y débiles de la comarca:</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 2.5rem;">
+          <div style="flex:1 1 260px; min-width:220px;">
+            <h3 style="color:#3bbfa3; margin-bottom:0.7em; display:flex; align-items:center; gap:0.5em; font-size:1.22rem;">
+              <span style="display:inline-block; width:1.2em; height:1.2em; aspect-ratio:1/1; border-radius:50%; background:#3bbfa3; margin-right:0.2em;"></span> Fortalezas
+            </h3>
+            <ul style="list-style:none; padding:0; margin:0;">
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#3bbfa3; margin-top:0.25em;"></span>
+                <span>Alto valor ambiental, con espacios naturales bien conservados.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#3bbfa3; margin-top:0.25em;"></span>
+                <span>Paisajes de gran calidad escénica y cultural.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#3bbfa3; margin-top:0.25em;"></span>
+                <span>Identidad rural fuerte, con tradiciones y patrimonio histórico.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#3bbfa3; margin-top:0.25em;"></span>
+                <span>Potencial para el turismo de naturaleza, cultural y termal.</span>
+              </li>
+            </ul>
+          </div>
+          <div style="flex:1 1 260px; min-width:220px;">
+            <h3 style="color:#833f53; margin-bottom:0.7em; display:flex; align-items:center; gap:0.5em; font-size:1.22rem;">
+              <span style="display:inline-block; width:1.2em; height:1.2em; aspect-ratio:1/1; border-radius:50%; background:#833f53; margin-right:0.2em;"></span> Debilidades
+            </h3>
+            <ul style="list-style:none; padding:0; margin:0;">
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#833f53; margin-top:0.25em;"></span>
+                <span>Pérdida progresiva de población, especialmente joven.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#833f53; margin-top:0.25em;"></span>
+                <span>Dificultades de acceso a servicios básicos en los municipios más pequeños.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#833f53; margin-top:0.25em;"></span>
+                <span>Carencia de infraestructuras modernas en transporte y comunicación digital.</span>
+              </li>
+              <li style="display:flex; align-items:flex-start; gap:0.7em; margin-bottom:0.7em;">
+                <span style="display:inline-block; width:1em; height:1em; aspect-ratio:1/1; border-radius:50%; background:#833f53; margin-top:0.25em;"></span>
+                <span>Riesgos asociados a incendios forestales y abandono de tierras agrícolas.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="participacion">
+  <div>
+  <h2>Participación</h2>
+  <p>Envíanos tus comentarios o propuestas para mejorar. </p>
+
+  <p style="font-size:1.08rem; margin-bottom: 10px; color:#833f53; font-weight:500;">Completa el formulario con tus comentarios, observaciones y alegaciones. </p>
+
+  <!-- Formulario de participación -->
+  <form id="formulario-participacion" style="max-width: 600px; margin: 30px 0;">
+    <div style="margin-bottom: 15px;">
+      <label for="nombre" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Nombre Completo *</label>
+      <input type="text" id="nombre" name="nombre" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label for="email" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Email *</label>
+      <input type="email" id="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box;">
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label for="municipio" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Municipio *</label>
+      <select id="municipio" name="municipio" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box;">
+        <option value="">Selecciona un municipio</option>
+        <option value="Arañuel">Arañuel</option>
+        <option value="Argelita">Argelita</option>
+        <option value="Ayódar">Ayódar</option>
+        <option value="Castillo de Villamalefa">Castillo de Villamalefa</option>
+        <option value="Cirat">Cirat</option>
+        <option value="Cortes de Arenoso">Cortes de Arenoso</option>
+        <option value="Espadilla">Espadilla</option>
+        <option value="Fanzara">Fanzara</option>
+        <option value="Fuentes de Ayódar">Fuentes de Ayódar</option>
+        <option value="Fuente La Reina">Fuente La Reina</option>
+        <option value="Ludiente">Ludiente</option>
+        <option value="Montán">Montán</option>
+        <option value="Montanejos">Montanejos</option>
+        <option value="Puebla de Arenoso">Puebla de Arenoso</option>
+        <option value="Toga">Toga</option>
+        <option value="Torralba del Pinar">Torralba del Pinar</option>
+        <option value="Torrechiva">Torrechiva</option>
+        <option value="Vallat">Vallat</option>
+        <option value="Villahermosa del Río">Villahermosa del Río</option>
+        <option value="Villamalur">Villamalur</option>
+        <option value="Villanueva de Viver">Villanueva de Viver</option>
+        <option value="Zucaina">Zucaina</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label for="tipo_aportacion" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Tipo de Aportación</label>
+      <select id="tipo_aportacion" name="tipo_aportacion" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box;">
+        <option value="">Selecciona el tipo</option>
+        <option value="Comentario">Comentario</option>
+        <option value="Propuesta">Propuesta</option>
+        <option value="Observación">Observación</option>
+        <option value="Alegación">Alegación</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom: 15px;">
+      <label for="comentarios" style="display: block; margin-bottom: 5px; font-weight: 500; color: #333;">Comentarios *</label>
+      <textarea id="comentarios" name="comentarios" required rows="6" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; box-sizing: border-box; font-family: Arial, sans-serif;"></textarea>
+    </div>
+
+    <div id="mensaje-respuesta" style="margin-bottom: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+
+    <button type="submit" style="background: #3bbfa3; color: white; padding: 12px 30px; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.3s;">Enviar Participación</button>
+  </form>
+
+  <script>
+  document.getElementById('formulario-participacion').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = this;
+    const formData = new FormData(form);
+    const mensajeDiv = document.getElementById('mensaje-respuesta');
+
+    // Mostrar mensaje de envío
+    mensajeDiv.style.display = 'block';
+    mensajeDiv.style.background = '#fff3cd';
+    mensajeDiv.style.color = '#664d03';
+    mensajeDiv.style.border = '1px solid #ffecb5';
+    mensajeDiv.textContent = 'Enviando tu participación...';
+
+    // Formspree endpoint (tu ID proporcionado)
+    const formspreeEndpoint = 'https://formspree.io/f/xaqqjwzd';
+
+    // Detectar si estamos en GitHub Pages (sitio estático) y usar Formspree
+    const runningOnGitHubPages = location.hostname.includes('github.io');
+
+    if (runningOnGitHubPages) {
+      fetch(formspreeEndpoint, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success || responseOk(data)) {
+          mostrarExito(mensajeDiv, 'Gracias. Tu participación ha sido enviada.');
+          form.reset();
+        } else {
+          mostrarError(mensajeDiv, 'Error al enviar el formulario (Formspree).');
+        }
+      })
+      .catch(err => {
+        console.error('Error Formspree:', err);
+        mostrarError(mensajeDiv, 'Error de conexión con Formspree.');
+      });
+      return;
+    }
+
+    // Si no estamos en GitHub Pages, intentamos el backend PHP (para servidores con PHP)
+    let urlProceso = 'procesar_encuesta.php';
+
+    fetch(urlProceso, { method: 'POST', body: formData })
+    .then(r => r.text())
+    .then(text => {
+      try {
+        const data = JSON.parse(text);
+        if (data.success) {
+          mostrarExito(mensajeDiv, data.success);
+          form.reset();
+        } else if (data.error) {
+          mostrarError(mensajeDiv, data.error);
+        }
+      } catch (err) {
+        // Si no es JSON, intentar versión simple
+        return fetch('procesar_encuesta_simple.php', { method: 'POST', body: formData })
+          .then(r => r.text())
+          .then(t => {
+            const data2 = JSON.parse(t);
+            if (data2.success) { mostrarExito(mensajeDiv, data2.success); form.reset(); }
+            else if (data2.error) { mostrarError(mensajeDiv, data2.error); }
+          });
+      }
+    })
+    .catch(err => {
+      console.error('Error backend:', err);
+      mostrarError(mensajeDiv, 'Error: No se puede conectar con el servidor.');
+    });
+
+    function mostrarExito(div, txt) {
+      div.style.display = 'block';
+      div.style.background = '#d4edda';
+      div.style.color = '#155724';
+      div.style.border = '1px solid #c3e6cb';
+      div.textContent = txt;
+      setTimeout(() => { div.style.display = 'none'; }, 5000);
+    }
+
+    function mostrarError(div, txt) {
+      div.style.display = 'block';
+      div.style.background = '#f8d7da';
+      div.style.color = '#721c24';
+      div.style.border = '1px solid #f5c6cb';
+      div.textContent = txt || 'Error: No se puede conectar con el servidor. Consulta SOLUCION_ERROR.md para más ayuda.';
+    }
+
+    function responseOk(data) {
+      // Formspree puede devolver {"ok":true} o similar; intenta detectar éxito
+      return data && (data.ok === true || data.success === true || data.status === 'success');
+    }
+  });
+  </script>
+
+  <!-- Botón Back to Top -->
+  <script>
+    // Mostrar/ocultar el botón según el scroll
+  // ...existing code...
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        backToTopBtn.style.display = 'flex';
+      } else {
+        backToTopBtn.style.display = 'none';
+      }
+    });
+    backToTopBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+  <!-- Mosaico de imágenes a lo ancho -->
+  <h3 style="color:#833f53; font-size:1.25rem; margin: 36px 0 12px 0; font-weight:600; text-align:left;">Galería de Imágenes</h3>
+  <div style="width: 100%; margin: 32px 0 0 0; display: flex; justify-content: center;">
+    <div id="galeria-mosaico" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; width: 100%; max-width: 1200px;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Arañuel" src="Nueva carpeta/Figura 1_Casco urbano de la localidad de Arañuel.jpg" alt="Casco urbano de Arañuel" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Argelita" src="Nueva carpeta/Figura 2_Casco urbano de Argelita.jpg" alt="Casco urbano de Argelita" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Castillo de Villamalefa" src="Nueva carpeta/Figura 4_Casco urbano de Castillo de Villamalefa.jpg" alt="Casco urbano de Castillo de Villamalefa" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Cirat y su entorno" src="Nueva carpeta/Figura 5_Casco urbano de Cirat y su entorno.jpg" alt="Casco urbano de Cirat y su entorno" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Cortes de Arenoso" src="Nueva carpeta/Figura 6_Casco urbano de Cortes de Arenoso.jpg" alt="Casco urbano de Cortes de Arenoso" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Fuente de la Reina" src="Nueva carpeta/Figura 8_Casco urbano de Fuente de la Reina.jpg" alt="Casco urbano de Fuente de la Reina" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Fuentes de Ayódar" src="Nueva carpeta/Figura 9_Casco urbano de Fuentes de Ayódar.jpg" alt="Casco urbano de Fuentes de Ayódar" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Ludiente" src="Nueva carpeta/Figura 10_Casco urbano de Ludiente.jpg" alt="Casco urbano de Ludiente" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Puebla de Arenoso" src="Nueva carpeta/Figura 12_Casco urbano de Puebla de Arenoso.jpg" alt="Casco urbano de Puebla de Arenoso" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Toga" src="Nueva carpeta/Figura 13_Casco urbano de Toga.jpg" alt="Casco urbano de Toga" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Torrechiva" src="Nueva carpeta/Figura 14_Casco urbano de Torrechiva.jpg" alt="Casco urbano de Torrechiva" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Vista del casco urbano de Villanueva de Viver" src="Nueva carpeta/Figura 17_Vista del casco urbano de Villanueva de Viver.jpg" alt="Vista del casco urbano de Villanueva de Viver" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Zucaina" src="Nueva carpeta/Figura 18_Casco urbano de Zucaina.jpg" alt="Casco urbano de Zucaina" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Ayódar" src="Nueva carpeta/ayodar (1).jpg" alt="Casco urbano de Ayódar" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Espadilla" src="Nueva carpeta/Espadilla.jpg" alt="Casco urbano de Espadilla" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Fanzara" src="Nueva carpeta/Fanzara.jpg" alt="Casco urbano de Fanzara" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Montán" src="Nueva carpeta/Montán.jpg" alt="Casco urbano de Montán" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Montanejos" src="Nueva carpeta/Montanejos.jpg" alt="Casco urbano de Montanejos" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Torralba del Pinar" src="Nueva carpeta/Torralba del Pinar.jpg" alt="Casco urbano de Torralba del Pinar" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Vallat" src="Nueva carpeta/vallat 1.jpg" alt="Casco urbano de Vallat" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Villahermosa del Río" src="Nueva carpeta/Villahermosa del Río.webp" alt="Casco urbano de Villahermosa del Río" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+      <img class="mosaico-participacion-img" data-title="Casco urbano de Villamalur" src="Nueva carpeta/Villamalur.jpg" alt="Casco urbano de Villamalur" style="width:100%; aspect-ratio: 1.1/1; height:auto; border-radius:14px; object-fit:cover; box-shadow:0 4px 18px #0002;">
+    </div>
+  </div>
+  <!-- Lightbox para galería -->
+  <div id="lightbox-galeria" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:rgba(40,20,30,0.92); align-items:center; justify-content:center; flex-direction:column;">
+    <button id="close-lightbox" style="position:absolute; top:32px; right:40px; background:none; border:none; color:#fff; font-size:2.2rem; cursor:pointer; z-index:2;">&times;</button>
+    <button id="prev-lightbox" style="position:absolute; left:32px; top:50%; transform:translateY(-50%); background:none; border:none; color:#fff; font-size:2.5rem; cursor:pointer; z-index:2;">&#8592;</button>
+    <img id="img-lightbox" src="" alt="" style="max-width:90vw; max-height:80vh; border-radius:18px; box-shadow:0 8px 32px #0008; background:#fff;">
+    <button id="next-lightbox" style="position:absolute; right:32px; top:50%; transform:translateY(-50%); background:none; border:none; color:#fff; font-size:2.5rem; cursor:pointer; z-index:2;">&#8594;</button>
+    <div id="caption-lightbox" style="color:#fff; font-size:1.18rem; margin-top:1.2rem; text-align:center; max-width:90vw;"></div>
+  </div>
+  <script>
+    // Lightbox galería de imágenes
+    const galeriaImgs = Array.from(document.querySelectorAll('#galeria-mosaico .mosaico-participacion-img'));
+    const lightbox = document.getElementById('lightbox-galeria');
+    const imgLightbox = document.getElementById('img-lightbox');
+    const captionLightbox = document.getElementById('caption-lightbox');
+    const closeBtn = document.getElementById('close-lightbox');
+    const prevBtn = document.getElementById('prev-lightbox');
+    const nextBtn = document.getElementById('next-lightbox');
+    let currentImg = 0;
+    function showLightbox(idx) {
+      currentImg = idx;
+      imgLightbox.src = galeriaImgs[idx].src;
+      imgLightbox.alt = galeriaImgs[idx].alt;
+      captionLightbox.textContent = galeriaImgs[idx].getAttribute('data-title') || '';
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function hideLightbox() {
+      lightbox.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    galeriaImgs.forEach((img, i) => {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => showLightbox(i));
+    });
+    closeBtn.onclick = hideLightbox;
+    prevBtn.onclick = () => showLightbox((currentImg - 1 + galeriaImgs.length) % galeriaImgs.length);
+    nextBtn.onclick = () => showLightbox((currentImg + 1) % galeriaImgs.length);
+    lightbox.addEventListener('click', e => {
+      if (e.target === lightbox) hideLightbox();
+    });
+    document.addEventListener('keydown', e => {
+      if (lightbox.style.display === 'flex') {
+        if (e.key === 'Escape') hideLightbox();
+        if (e.key === 'ArrowLeft') prevBtn.onclick();
+        if (e.key === 'ArrowRight') nextBtn.onclick();
+      }
+    });
+  </script>
+  </div>
+  </section>
+
+  <section id="documentacion">
+    <div class="contenido-flex">
+      <div class="texto">
+        <h2>Documentación</h2>
+  <p>Aquí puedes acceder a todos los documentos relacionados con el Plan de Acción Territorial del Alto Mijares: memorias, planos de ordenación, informes, etc.</p>
+  <p>Al permitir el acceso a toda la población se busca asegurar la transparencia y poner a disposición de la ciudadanía, de manera sencilla, toda la información relacionada con el proceso.</p>
+        
+      </div>
+      <div class="imagen" style="display: flex; align-items: center; justify-content: center;">
+  <a class="btn btn-docs" href="https://mediambient.gva.es/es/web/planificacion-territorial-e-infraestructura-verde/planes-de-accion-territorial/pats-rurales" target="_blank" style="font-size:1.13rem; padding: 18px 32px;">Ver Documentos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+  <!-- Flecha granate Back to Top -->
+  <button id="back-to-top" title="Volver arriba" aria-label="Volver arriba">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <path d="M16 6c-.41 0-.8.17-1.09.47l-9.5 9.5a1.5 1.5 0 1 0 2.12 2.12L15 11.12V25a1.5 1.5 0 0 0 3 0V11.12l7.47 6.97a1.5 1.5 0 1 0 2.12-2.12l-9.5-9.5A1.5 1.5 0 0 0 16 6z"/>
+    </svg>
+  </button>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+      <p style="margin: 0.5rem 0 0 0;">&copy; 2025 Plan de Acción Territorial del Alto Mijares | Participación Pública</p>
+      <div style="display: flex; align-items: center; gap: 2rem; justify-content: center; margin-top: 0.5rem;">
+        <img src="Nueva carpeta/Vicepresidencia tercera y Conselleria de Medio Ambiente VAL ROJO.png" alt="Logo Vicepresidencia tercera y Conselleria de Medio Ambiente" style="max-width: 380px; height: auto;">
+        <a href="https://grupodayhe.es/" target="_blank" style="display: inline-block; transition: transform 0.3s ease, filter 0.3s ease; cursor: pointer;">
+          <img src="Nueva carpeta/Logo GD.png" alt="Logo GD" style="max-width: 360px; height: auto; display: block;">
+        </a>
+      </div>
+    </div>
+  </footer>
+
+
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <script>
+    // --- Calendario de Eventos ---
+    const events = [
+      { date: '2025-09-25', title: 'Taller participativo en Cirat' },
+      { date: '2025-10-03', title: 'Reunión informativa en Argelita' },
+      { date: '2025-10-10', title: 'Encuentro vecinal en Ludiente' },
+      { date: '2025-10-18', title: 'Cierre de encuesta online' }
+    ];
+    const calendarBody = document.getElementById('calendar-body');
+    const calendarMonth = document.getElementById('calendar-month');
+    const eventList = document.getElementById('event-list');
+    let current = new Date();
+    current.setDate(1);
+
+  function renderCalendar() {
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = (firstDay.getDay() + 6) % 7; // Lunes=0
+      let html = '<tr>' + '<td></td>'.repeat(startDay);
+      let day = 1;
+      for (let i = startDay; i < 7; i++) {
+        html += dayCell(day, month, year);
+        day++;
+      }
+      html += '</tr>';
+      while (day <= lastDay.getDate()) {
+        html += '<tr>';
+        for (let i = 0; i < 7; i++) {
+          if (day > lastDay.getDate()) html += '<td></td>';
+          else {
+            html += dayCell(day, month, year);
+            day++;
+          }
+        }
+        html += '</tr>';
+      }
+      calendarBody.innerHTML = html;
+      calendarMonth.textContent = current.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+  addDayListeners();
+  showEventsForMonth();
+  renderEventListAll();
+    // Mostrar todos los eventos planificados en el listado lateral
+    function renderEventListAll() {
+      const eventosTodos = document.getElementById('eventos-todos');
+      if (!eventosTodos) return;
+      if (events.length === 0) {
+        eventosTodos.innerHTML = '<li style="color:#aaa;">No hay eventos planificados.</li>';
+        return;
+      }
+      // Ordenar por fecha ascendente
+      const eventosOrdenados = events.slice().sort((a, b) => a.date.localeCompare(b.date));
+      eventosTodos.innerHTML = eventosOrdenados.map(e => `<li style="margin-bottom:1em;"><b>${e.title}</b><br><span style='color:#3bbfa3;font-size:0.98em;'>${e.date}</span></li>`).join('');
+    }
+    }
+    function dayCell(day, month, year) {
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const hasEvent = events.some(e => e.date === dateStr);
+      return `<td data-date="${dateStr}" style="padding:6px; border-radius:8px; background:${hasEvent?'#e6c1a3':'none'}; color:${hasEvent?'#833f53':'#333'}; font-weight:${hasEvent?'bold':'normal'}; cursor:pointer;">${day}</td>`;
+    }
+    function addDayListeners() {
+      document.querySelectorAll('#calendar-table td[data-date]').forEach(td => {
+        td.onclick = function() {
+          const date = this.getAttribute('data-date');
+          const dayEvents = events.filter(e => e.date === date);
+          if (dayEvents.length) {
+            eventList.innerHTML = dayEvents.map(e => `<div><b>${e.title}</b> <span style='color:#3bbfa3;font-size:0.98em;'>(${date})</span></div>`).join('');
+          } else {
+            eventList.innerHTML = '';
+          }
+        };
+      });
+    }
+    function showEventsForMonth() {
+      const monthStr = `${current.getFullYear()}-${String(current.getMonth()+1).padStart(2,'0')}`;
+      const monthEvents = events.filter(e => e.date.startsWith(monthStr));
+      if (monthEvents.length) {
+        eventList.innerHTML = monthEvents.map(e => `<div><b>${e.title}</b> <span style='color:#3bbfa3;font-size:0.98em;'>(${e.date})</span></div>`).join('');
+      } else {
+        eventList.innerHTML = '<span style="color:#aaa;">No hay eventos este mes.</span>';
+      }
+    }
+    document.getElementById('prev-month').onclick = function() {
+      current.setMonth(current.getMonth() - 1);
+      renderCalendar();
+    };
+    document.getElementById('next-month').onclick = function() {
+      current.setMonth(current.getMonth() + 1);
+      renderCalendar();
+    };
+    renderCalendar();
+  </script>
+
+  <style>
+  .map-legend {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      z-index: 500;
+      background: rgba(255,255,255,0.97);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px #0002;
+      padding: 16px 28px 12px 28px;
+      font-size: 1rem;
+      min-width: 240px;
+      max-width: 520px;
+      max-height: 60vh;
+      overflow-y: auto;
+      color: #222;
+      border: 1px solid #eee;
+  pointer-events: auto;
+  cursor: url('Nueva carpeta/icone-de-feuille-verte.png') 16 16, auto !important;
+    }
+    #map { position: relative; z-index: 1; }
+    .map-legend h4 {
+      margin: 0 0 8px 0;
+      font-size: 1.08em;
+      color: #833f53;
+    }
+    .map-legend .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .map-legend .legend-color {
+  width: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1.5px solid #bbb;
+  display: inline-block;
+  margin-right: 4px;
+    }
+    .map-legend .legend-line {
+      width: 22px;
+      height: 0;
+      border-top: 3px solid #bbbbbb;
+      margin-right: 4px;
+      display: inline-block;
+    }
+    .map-legend .legend-line.pecuaria {
+      border-top: 3px solid #c49c6e;
+    }
+    .map-legend .legend-line.cauce {
+      border-top: 3px solid #7ec6f7;
+    }
+
+  /* Botón Ver Documentos: verde al hover */
+  a.btn.btn-docs:hover {
+    background: #3bbfa3 !important;
+    color: #fff !important;
+    border-color: #3bbfa3 !important;
+  }
+
+  /* Logo GD: efecto hover con aumento y resalte */
+  a[href="https://grupodayhe.es/"] img {
+    transition: transform 0.3s ease, filter 0.3s ease;
+  }
+  a[href="https://grupodayhe.es/"]:hover img {
+    transform: scale(1.20);
+    filter: drop-shadow(0 4px 12px rgba(131,63,83,0.25));
+  }
+  </style>
+
+  <script>
+
+
+    // Crear mapa en Alto Mijares
+    var map = L.map('map').setView([40.10, -0.45], 11);
+  // Desactivar zoom con la rueda por defecto
+  map.scrollWheelZoom.disable();
+  // Activar zoom con la rueda solo tras hacer click/focus en el mapa
+  map.on('focus click', function() { map.scrollWheelZoom.enable(); });
+  // Desactivar zoom con la rueda al salir del mapa
+  map.on('blur', function() { map.scrollWheelZoom.disable(); });
+  // Permitir que el mapa reciba el foco con tab
+  document.getElementById('map').tabIndex = 0;
+
+    // Leyenda personalizada
+    var legend = L.control({position: 'topright'});
+    // Leyenda con descripciones de zonificación
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'map-legend');
+      div.innerHTML = `
+  <h4>Leyenda</h4>
+  <div class="legend-row"><span class="legend-color" style="background:#ff3333"></span> Zona Urbanizada Residencial media densidad (ZUR-RE)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#990000"></span> Núcleo Histórico Tradicional (ZUR-NHT)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#ffe29a"></span> Zona Rural Agrícola (ZRP-AG)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#b3b3b3"></span> Zona Urbanizada Industrial (ZUR-IN)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#b2b2e6"></span> Zona Rural No Agrícola Periurbana Especial (ZRP-NA-PE-P)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#c1e6e6"></span> Zona Rural Protegida Paisajística (ZRP-PP)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#b2e6c1"></span> Zona Rural Forestal Protegida (ZRP-FO-P)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#a3e6a3"></span> Zona Rural Forestal (ZRP-FO)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#f7e6a3"></span> Zona Rural Agrícola 2 (ZRC-AG2)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#fff7a3"></span> Zona Rural Agrícola 1 (ZRC-AG1)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#c1c1a3"></span> Zona Rural Forestal (ZRC-FO)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#e6c1a3"></span> Mosaico Agroforestal (ZRC-MAF)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#d1e6a3"></span> Zona Rural No Agrícola Agrícola 1I (ZRP-NA-AG 1I)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#e6d1a3"></span> Zona Rural No Agrícola Agrícola 2T (ZRP-NA-AG 2T)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#a3e6e6"></span> Zona Rural No Agrícola Periurbana Especial 1E (ZRP-NA-PE1-E)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#a3b7e6"></span> Zona Rural No Agrícola Periurbana Especial 2E (ZRP-NA-PE2-E)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#e6a3a3"></span> Zona Rural No Agrícola Residencial Extensiva (ZRP-NA-RE)</div>
+  <div class="legend-row"><span class="legend-color" style="background:#a3e6b7"></span> Zona Rural Forestal Especial (ZRP-FO-E)</div>
+        <div class="legend-row"><span class="legend-line"></span> Carretera</div>
+        <div class="legend-row"><span class="legend-line pecuaria"></span> Pecuaria</div>
+        <div class="legend-row"><span class="legend-line cauce"></span> Cauce</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+
+    // Capa GeoJSON de Municipios Comarca (sin fondo, borde gris oscuro)
+    let municipiosLayer;
+    let municipiosLabels = [];
+    fetch('Nueva carpeta/municipios comarca.geojson')
+      .then(response => response.json())
+      .then(data => {
+        municipiosLayer = L.geoJSON(data, {
+          style: {
+            color: '#222222', // gris muy oscuro
+            weight: 3.5,
+            fillOpacity: 0
+          }
+        }).addTo(map);
+
+        // Crear labels usando el centroide real del polígono (getBounds().getCenter())
+        L.geoJSON(data, {
+          style: {opacity:0, fillOpacity:0}, // invisible
+          onEachFeature: function(feature, layer) {
+            const center = layer.getBounds().getCenter();
+            let label = L.marker(center, {
+              icon: L.divIcon({
+                className: 'municipio-label',
+                html: `<span>${feature.properties.nom_mun}</span>`,
+                iconSize: null,
+                iconAnchor: [0, 0], // top-left, but we use CSS to center
+              }),
+              interactive: false
+            });
+            municipiosLabels.push(label);
+          }
+        });
+        updateMunicipiosLabels();
+      });
+
+    // Mostrar/ocultar nombres de municipios según zoom
+    function updateMunicipiosLabels() {
+      // Mostrar solo si zoom >= 12
+      if (map.getZoom() >= 12) {
+        municipiosLabels.forEach(l => { if (!map.hasLayer(l)) l.addTo(map); });
+      } else {
+        municipiosLabels.forEach(l => { if (map.hasLayer(l)) map.removeLayer(l); });
+      }
+    }
+    map.on('zoomend', updateMunicipiosLabels);
+
+    // Capa base clara (CartoDB Positron)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CartoDB',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+
+
+    // Capa GeoJSON de Zonificación con estilos aproximados por categoría
+    fetch('Nueva carpeta/Zonificación_1.geojson')
+      .then(response => response.json())
+      .then(data => {
+        function getZonificacionColor(zona) {
+          switch(zona) {
+            case 'ZUR-RE': return '#ff3333'; // rojo
+            case 'ZUR-NHT': return '#990000'; // rojo oscuro
+            case 'ZRC-EP': return '#e6f39d'; // verde claro
+            case 'ZRP-EP': return '#b2d8b2'; // verde medio
+            case 'ZRP-NA-EP': return '#a3c1da'; // azul claro
+            case 'ZRP-AG': return '#ffe29a'; // amarillo
+            case 'ZUR-RE-M': return '#f7b7a3'; // naranja claro
+            case 'ZUR-TR': return '#e6a3c1'; // rosa
+            case 'ZUR-IN': return '#b3b3b3'; // gris
+            case 'ZRP-NA-PE-P': return '#b2b2e6'; // lila
+            case 'ZRP-PP': return '#c1e6e6'; // celeste
+            case 'ZRP-FO-P': return '#b2e6c1'; // verde agua
+            case 'ZRP-FO': return '#a3e6a3'; // verde
+            case 'ZRC-AG2': return '#f7e6a3'; // beige
+            case 'ZRC-AG1': return '#fff7a3'; // amarillo claro
+            case 'ZRC-FO': return '#c1c1a3'; // oliva
+            case 'ZRC-MAF': return '#e6c1a3'; // marrón claro
+            case 'ZRP-NA-AG 1I': return '#d1e6a3'; // verde lima
+            case 'ZRP-NA-AG 2T': return '#e6d1a3'; // crema
+            case 'ZRP-NA-PE1-E': return '#a3e6e6'; // azul agua
+            case 'ZRP-NA-PE2-E': return '#a3b7e6'; // azul lila
+            case 'ZRP-NA-RE': return '#e6a3a3'; // rojo claro
+            case 'ZRP-FO-E': return '#a3e6b7'; // verde pastel
+            default: return '#cccccc'; // gris neutro
+          }
+        }
+        L.geoJSON(data, {
+          style: function(feature) {
+            return {
+              color: '#888888',
+              weight: 0.7,
+              fillColor: getZonificacionColor(feature.properties['Zona PAT']),
+              fillOpacity: 0.7
+            };
+          },
+          onEachFeature: function (feature, layer) {
+            let popupContent = '';
+            // Muestra todos los atributos del polígono
+            for (const key in feature.properties) {
+              popupContent += `<b>${key}:</b> ${feature.properties[key]}<br>`;
+            }
+            layer.on({
+              click: function() {
+                layer.bindPopup(popupContent).openPopup();
+              }
+            });
+          }
+        }).addTo(map);
+      });
+
+      // Capa GeoJSON de Zonas lineales
+      fetch('Nueva carpeta/Zonas lineales.geojson')
+        .then(response => response.json())
+        .then(data => {
+          function getLineaFillColor(zonaPAT) {
+            if (!zonaPAT) return '#cccccc';
+            if (zonaPAT.toUpperCase().includes('CARRETERA')) return '#bbbbbb'; // gris claro
+            if (zonaPAT.toUpperCase().includes('PECUARIA')) return '#c49c6e'; // marrón clarito
+            if (zonaPAT.toUpperCase().includes('CAUCE')) return '#7ec6f7'; // azul claro
+            // fallback por si hay otros valores
+            if (zonaPAT.toUpperCase().includes('AF')) return '#c49c6e'; // pecuarias
+            if (zonaPAT.toUpperCase().includes('CA')) return '#7ec6f7'; // cauces
+            return '#bbbbbb'; // gris claro por defecto
+          }
+          L.geoJSON(data, {
+            style: function(feature) {
+              return {
+                color: '#bbbbbb', // borde gris claro
+                weight: 0.7,
+                fillColor: getLineaFillColor(feature.properties['Zona PAT']),
+                fillOpacity: 0.7,
+                dashArray: null
+              };
+            },
+            onEachFeature: function(feature, layer) {
+              let popupContent = '';
+              for (const key in feature.properties) {
+                popupContent += `<b>${key}:</b> ${feature.properties[key]}<br>`;
+              }
+              layer.on({
+                click: function() {
+                  layer.bindPopup(popupContent).openPopup();
+                }
+              });
+            }
+          }).addTo(map);
+        });
+
+    // Script menú hamburguesa
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+
+    toggle.addEventListener('click', () => {
+      menu.classList.toggle('show');
+    });
+  </script>
+</body>
+</html>

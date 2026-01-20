@@ -1,0 +1,366 @@
+✅ CHECKLIST DE VERIFICACIÓN
+════════════════════════════════════════════════════════════════════════════════
+
+SISTEMA DE ENCUESTAS DE PARTICIPACIÓN - PAT ALTO MIJARES
+Email: pataltomijares@gmail.com
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 VERIFICACIÓN PREVIA A INSTALACIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+Antes de subir al servidor, verifica que tienes:
+
+□ Todos los archivos descargados localmente
+□ Acceso FTP o gestor de archivos del servidor
+□ La dirección del servidor web
+□ Credenciales del hosting
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 VERIFICACIÓN DE ARCHIVOS
+────────────────────────────────────────────────────────────────────────────────
+
+Archivos OBLIGATORIOS (CRÍTICOS):
+
+□ PATaltomijares.html                    [Página web principal]
+  └─ Verificar: Contiene sección "Participación"
+  └─ Verificar: Formulario con 5 campos
+
+□ procesar_encuesta.php                  [Script de procesamiento]
+  └─ Verificar: Valida datos
+  └─ Verificar: Envía emails
+
+□ config_encuestas.php                   [Configuración]
+  └─ Verificar: EMAIL_DESTINO correcto
+  └─ Verificar: EMAIL_REMITENTE correcto
+
+Archivos RECOMENDADOS (SEGURIDAD):
+
+□ .htaccess                              [Reglas de seguridad]
+  └─ Opcional pero recomendado
+
+Archivos OPCIONALES (FUNCIONALIDAD):
+
+□ test.php                               [Pruebas del sistema]
+□ dashboard.html                         [Panel de administración]
+□ install.sh                             [Script de instalación]
+□ abrir.bat                              [Menú rápido Windows]
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📥 VERIFICACIÓN DE SUBIDA AL SERVIDOR
+────────────────────────────────────────────────────────────────────────────────
+
+Después de subir los archivos via FTP:
+
+□ Todos los archivos están en: /web/ (o tu carpeta raíz)
+□ Permisos de archivo son 644 (scripts) o 755 (directorios)
+□ Directorio /logs/ existe (crear si es necesario)
+□ Directorio /logs/ tiene permisos de escritura (755)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🧪 VERIFICACIÓN DE INSTALACIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+Prueba 1: Acceso a archivos
+  □ Accedo a: http://tudominio.com/PATaltomijares.html
+    └─ Estado esperado: Se carga el sitio web ✓
+  □ Accedo a: http://tudominio.com/test.php
+    └─ Estado esperado: Se muestra la página de pruebas ✓
+
+Prueba 2: PHP funciona
+  □ test.php muestra resultados
+    └─ Estado esperado: PHP mail() detectado ✓
+
+Prueba 3: Base del sitio
+  □ Veo la sección de "Participación"
+    └─ Estado esperado: Formulario visible ✓
+  □ Todos los 23 municipios aparecen
+    └─ Estado esperado: Lista completa ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✍️ VERIFICACIÓN DEL FORMULARIO
+────────────────────────────────────────────────────────────────────────────────
+
+Campos del formulario:
+
+□ Campo "Nombre Completo"
+  ├─ Está visible ✓
+  ├─ Es obligatorio (marca de *) ✓
+  └─ Tipo: texto ✓
+
+□ Campo "Email"
+  ├─ Está visible ✓
+  ├─ Es obligatorio ✓
+  └─ Tipo: email ✓
+
+□ Campo "Municipio"
+  ├─ Está visible ✓
+  ├─ Es obligatorio ✓
+  ├─ Tipo: select ✓
+  ├─ Opciones: 23 municipios ✓
+  └─ Tiene opción "Otro" ✓
+
+□ Campo "Tipo de Aportación"
+  ├─ Está visible ✓
+  ├─ Es opcional ✓
+  ├─ Opciones: Comentario, Propuesta, Observación, Alegación ✓
+  └─ Tiene valor vacío por defecto ✓
+
+□ Campo "Comentarios"
+  ├─ Está visible ✓
+  ├─ Es obligatorio ✓
+  ├─ Es textarea (múltiples líneas) ✓
+  └─ Tiene altura adecuada ✓
+
+□ Botón "Enviar Participación"
+  ├─ Está visible ✓
+  ├─ Color correcto (verde) ✓
+  ├─ Es funcional ✓
+  └─ Cambia de color al pasar ratón ✓
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📧 VERIFICACIÓN DE ENVÍO DE EMAILS
+────────────────────────────────────────────────────────────────────────────────
+
+Prueba de envío (Paso a Paso):
+
+1. Abre: http://tudominio.com/PATaltomijares.html
+   □ La página carga correctamente
+
+2. Scrollea hasta "Participación"
+   □ Ves el formulario
+
+3. Completa con datos de prueba:
+   □ Nombre: "Prueba Sistema"
+   □ Email: "tuEmail@dominio.com" (TU email)
+   □ Municipio: "Arañuel"
+   □ Tipo: "Comentario"
+   □ Comentarios: "Este es un email de prueba del sistema"
+
+4. Haz click en "Enviar Participación"
+   □ Aparece mensaje de éxito (verde)
+   □ Formulario se limpia
+
+5. Abre tu email personal
+   □ Dentro de 5-30 segundos llegarán DOS emails:
+
+Email 1 - Confirmación para ti:
+  □ Asunto: "Hemos recibido tu aportación - PAT Alto Mijares"
+  □ De: noreply@pataltomijares.es
+  □ Contiene tu nombre
+  □ Contiene municipio seleccionado
+  □ Contiene fecha
+  □ Mensaje personalizado
+
+Email 2 - Para administrador (pataltomijares@gmail.com):
+  □ Asunto: "Nueva respuesta de encuesta - PAT Alto Mijares"
+  □ De: noreply@pataltomijares.es
+  □ Contiene todos los datos
+  □ Incluye tu email (para contactarte)
+  □ Incluye IP y navegador
+  □ Contiene los comentarios completos
+
+════════════════════════════════════════════════════════════════════════════════
+
+🔒 VERIFICACIÓN DE SEGURIDAD
+────────────────────────────────────────────────────────────────────────────────
+
+Prueba 1: Validación de campos
+  □ Intenta enviar sin nombre
+    └─ Resultado esperado: Mensaje de error ✓
+  □ Intenta enviar sin email
+    └─ Resultado esperado: Mensaje de error ✓
+  □ Intenta enviar sin municipio
+    └─ Resultado esperado: Mensaje de error ✓
+  □ Intenta enviar sin comentarios
+    └─ Resultado esperado: Mensaje de error ✓
+
+Prueba 2: Validación de email
+  □ Intenta con email inválido: "test@"
+    └─ Resultado esperado: Mensaje de error ✓
+  □ Intenta con email inválido: "test"
+    └─ Resultado esperado: Mensaje de error ✓
+  □ Intenta con email válido: "test@dominio.com"
+    └─ Resultado esperado: Se envía ✓
+
+Prueba 3: Validación de municipio
+  □ Intenta manipular el select (mediante F12)
+    └─ Resultado esperado: No se envía (validación servidor) ✓
+
+Prueba 4: Sanitización
+  □ Intenta con caracteres especiales: "!@#$%^&*()"
+    └─ Resultado esperado: Se sanitiza correctamente ✓
+  □ Intenta con HTML: "<script>alert('test')</script>"
+    └─ Resultado esperado: Se escapa correctamente ✓
+
+════════════════════════════════════════════════════════════════════════════════
+
+📱 VERIFICACIÓN DE RESPONSIVIDAD
+────────────────────────────────────────────────────────────────────────────────
+
+Desktop (1920px):
+  □ Formulario se ve bien
+  □ Botones son clickeables
+  □ No hay elementos superpuestos
+
+Laptop (1366px):
+  □ Formulario se ve bien
+  □ Espaciado correcto
+  □ Lectura clara
+
+Tablet (768px):
+  □ Formulario está responsive
+  □ Inputs tienen tamaño táctil
+  □ Sin scroll horizontal
+
+Mobile (360px):
+  □ Formulario ocupa ancho correcto
+  □ Inputs son tapping-friendly
+  □ Teclado no cubre campos
+  □ Mensaje de éxito visible
+
+════════════════════════════════════════════════════════════════════════════════
+
+🌐 VERIFICACIÓN DE NAVEGADORES
+────────────────────────────────────────────────────────────────────────────────
+
+Chrome:
+  □ Formulario funciona
+  □ Emails se envían
+  □ Sin errores en consola
+
+Firefox:
+  □ Formulario funciona
+  □ Emails se envían
+  □ Sin errores en consola
+
+Safari:
+  □ Formulario funciona
+  □ Emails se envían
+  □ Sin errores en consola
+
+Edge:
+  □ Formulario funciona
+  □ Emails se envían
+  □ Sin errores en consola
+
+Mobile (Chrome):
+  □ Formulario funciona
+  □ Teclado se abre correctamente
+  □ Emails se envían
+
+════════════════════════════════════════════════════════════════════════════════
+
+📊 VERIFICACIÓN DE CONFIGURACIÓN
+────────────────────────────────────────────────────────────────────────────────
+
+config_encuestas.php:
+
+□ EMAIL_DESTINO = pataltomijares@gmail.com
+□ EMAIL_REMITENTE = noreply@pataltomijares.es
+□ ASUNTO_ADMIN = "Nueva respuesta de encuesta - PAT Alto Mijares"
+□ ASUNTO_PARTICIPANTE = "Hemos recibido tu aportación - PAT Alto Mijares"
+□ REGISTRAR_IP = true
+□ HABILITAR_LOGS = true
+□ USAR_BASE_DATOS = false (o true si está configurada)
+
+Si cambiaste el email:
+□ Nuevo email está en EMAIL_DESTINO
+□ procesar_encuesta.php carga config_encuestas.php
+□ Emails se envían al nuevo destino
+
+════════════════════════════════════════════════════════════════════════════════
+
+📋 VERIFICACIÓN FINAL COMPLETA
+────────────────────────────────────────────────────────────────────────────────
+
+REQUISITOS CUMPLIDOS:
+  □ Todos los archivos subidos
+  □ Permisos correctos en servidor
+  □ PHP mail() habilitado
+  □ .htaccess en su lugar
+
+FUNCIONALIDAD PROBADA:
+  □ HTML se carga correctamente
+  □ Formulario es visible
+  □ Validación funciona
+  □ Emails se envían
+  □ Confirmación se recibe
+
+SEGURIDAD VERIFICADA:
+  □ Campos validados
+  □ Datos sanitizados
+  □ Sin vulnerabilidades XSS
+  □ Sin vulnerabilidades SQL injection
+
+RESPONSIVIDAD CONFIRMUADA:
+  □ Desktop OK
+  □ Tablet OK
+  □ Mobile OK
+  □ Todos los navegadores OK
+
+════════════════════════════════════════════════════════════════════════════════
+
+🎉 ESTADO DEL SISTEMA
+────────────────────────────────────────────────────────────────────────────────
+
+Si TODOS los checkboxes están marcados:
+
+✅ SISTEMA COMPLETAMENTE FUNCIONAL
+✅ LISTO PARA PRODUCCIÓN
+✅ LOS USUARIOS PUEDEN PARTICIPAR
+
+Próximos pasos:
+  1. Comunicar a usuarios la dirección del sitio
+  2. Monitorear pataltomijares@gmail.com
+  3. Responder a las participaciones
+  4. Hacer análisis periódico de respuestas
+
+════════════════════════════════════════════════════════════════════════════════
+
+⚠️ PROBLEMAS COMUNES
+────────────────────────────────────────────────────────────────────────────────
+
+Si los emails NO llegan:
+  □ Ejecuta test.php nuevamente
+  □ Contacta al proveedor de hosting
+  □ Solicita activar SMTP o mail()
+  □ Verifica carpeta de spam en Gmail
+
+Si el formulario NO funciona:
+  □ Recarga la página (Ctrl+F5)
+  □ Abre consola (F12) y busca errores
+  □ Verifica que procesar_encuesta.php está subido
+  □ Verifica que tiene permisos 644
+
+Si hay errores en consola:
+  □ Verifica sintaxis de JavaScript
+  □ Comprueba CORS si es necesario
+  □ Verifica headers en PHP
+
+════════════════════════════════════════════════════════════════════════════════
+
+📞 INFORMACIÓN DE CONTACTO
+────────────────────────────────────────────────────────────────────────────════
+
+Email de respuestas: pataltomijares@gmail.com
+Documentación: Archivos .md en la carpeta
+Soporte técnico: Consulta README_ENCUESTAS.md
+
+════════════════════════════════════════════════════════════════════════════════
+
+✅ VERIFICACIÓN COMPLETADA
+
+Fecha: ________________
+Verificado por: ________________________
+Firma: __________________________________
+
+════════════════════════════════════════════════════════════════════════════════
+
+VERSIÓN 1.0 - ENERO 2026
+SISTEMA COMPLETAMENTE FUNCIONAL ✓

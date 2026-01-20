@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAT Alto Mijares - Participación Pública</title>
+    <style>
+        /* Fuente base */
+        body {
+            font-family: Arial, "Arial Narrow", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fdfdfd;
+            color: #333;
+        }
+
+        /* Colores y estilos base */
+        :root {
+            --color-principal: rgb(131,63,83);
+            --color-secundario: rgb(180,120,140);
+            --color-fondo: #fafafa;
+        }
+
+        /* Barra de navegación */
+        header {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+            color: var(--color-secundario);
+        }
+
+        /* Secciones */
+        section {
+            padding: 50px;
+            background-color: var(--color-fondo);
+            border-bottom: 1px solid #ddd;
+        }
+
+        section h2 {
+            color: var(--color-principal);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--color-principal);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Botón */
+        .btn {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: var(--color-secundario);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>PAT Alto Mijares</h1>
+        <nav>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#que-es">¿Qué es?</a></li>
+                <li><a href="#territorio">Territorio, Paisaje y Mundo Rural</a></li>
+                <li><a href="#fortalezas">Fortalezas y Debilidades</a></li>
+                <li><a href="#participacion">Participación</a></li>
+                <li><a href="#documentacion">Documentación</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="inicio">
+        <h2>Bienvenido</h2>
+        <p>Esta es la página de Participación Pública del Plan de Acción Territorial de la Comarca del Alto Mijares.</p>
+    </section>
+
+    <section id="que-es">
+        <h2>¿Qué es el Plan de Acción Territorial del Alto Mijares?</h2>
+        <p>Aquí añadiremos la explicación del PAT, sus objetivos y finalidad.</p>
+    </section>
+
+    <section id="territorio">
+        <h2>Territorio, Paisaje y Mundo Rural</h2>
+        <p>Aquí podremos insertar mapas, gráficos y fotografías del territorio.</p>
+    </section>
+
+    <section id="fortalezas">
+        <h2>El Alto Mijares: Fortalezas y Debilidades</h2>
+        <p>Aquí se detallarán los análisis DAFO con gráficos y esquemas.</p>
+    </section>
+
+    <section id="participacion">
+        <h2>Participación</h2>
+        <p>En este apartado incluiremos:</p>
+        <ul>
+            <li>Cuestionarios de participación (enlace a Google Forms o Drive)</li>
+            <li>Calendario de talleres y reuniones</li>
+            <li>Buzón de contacto</li>
+        </ul>
+        <a class="btn" href="https://drive.google.com/" target="_blank">Acceder a Documentos</a>
+    </section>
+
+    <section id="documentacion">
+        <h2>Documentación</h2>
+        <p>Aquí se podrá descargar toda la documentación oficial del proceso de participación.</p>
+        <a class="btn" href="https://drive.google.com/" target="_blank">Ver Documentos</a>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Plan de Acción Territorial del Alto Mijares | Participación Pública</p>
+    </footer>
+
+</body>
+</html>

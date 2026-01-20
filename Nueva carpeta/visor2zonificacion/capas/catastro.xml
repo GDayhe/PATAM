@@ -1,0 +1,4 @@
+<!DOCTYPE connections>
+<qgsWMSConnections version="1.0">
+    <wms ignoreGetMapURI="0" ignoreGetFeatureInfoURI="0" smoothPixmapTransform="0" password="" ignoreAxisOrientation="0" url="https://ovc.catastro.meh.es/cartografia/wms/servidorwms.aspx" name="catastro" dpiMode="7" username="" invertAxisOrientation="0"/>
+</qgsWMSConnections>
